@@ -29,3 +29,6 @@ Thumbs.db
 
 # Local documentation (not tracked in git)
 docs/ARCHITECTURE.md
+
+# Scraped site data for RAG
+data/scraped/
