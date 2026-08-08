@@ -11,13 +11,18 @@ class ChatService:
     def __init__(self, vector_store: VectorStoreService | None = None) -> None:
         self.vector_store = vector_store
 
-    def build_reply(self, message: str, history: list[HistoryMessage]) -> str:
-        if self.vector_store and self.vector_store.count() > 0:
-            matches = self.vector_store.search(message)
+    async def build_reply(self, message: str, history: list[HistoryMessage]) -> str:
+        if self.vector_store:
+            matches = await asyncio.to_thread(self._search_catalog, message)
             if matches:
                 return self._build_rag_reply(message, history, matches)
 
         return self._build_placeholder_reply(message, history)
+
+    def _search_catalog(self, message: str) -> list[dict]:
+        if self.vector_store is None or self.vector_store.count() == 0:
+            return []
+        return self.vector_store.search(message)
 
     def _build_rag_reply(
         self,
@@ -101,7 +106,7 @@ class ChatService:
         message: str,
         history: list[HistoryMessage],
     ) -> AsyncIterable[StreamChunk]:
-        reply = self.build_reply(message, history)
+        reply = await self.build_reply(message, history)
 
         for token in self.tokenize(reply):
             yield StreamChunk(delta=token)
