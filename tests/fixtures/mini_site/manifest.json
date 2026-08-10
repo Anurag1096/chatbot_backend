@@ -1,0 +1,35 @@
+{
+  "site_name": "mini_site",
+  "base_url": "https://books.toscrape.com",
+  "scraped_at": "2026-08-10T12:00:00+00:00",
+  "page_count": 3,
+  "pages": [
+    {
+      "id": "category_poetry",
+      "url": "https://books.toscrape.com/catalogue/category/books/poetry_23/index.html",
+      "title": "Poetry | Books to Scrape",
+      "file": "pages/listing.txt",
+      "word_count": 80,
+      "page_type": "category-listing",
+      "item_count": 2
+    },
+    {
+      "id": "moonlit_verses",
+      "url": "https://books.toscrape.com/catalogue/moonlit-verses_1/index.html",
+      "title": "Moonlit Verses",
+      "file": "pages/book_a.txt",
+      "word_count": 120,
+      "page_type": "product-detail",
+      "item_count": 1
+    },
+    {
+      "id": "garden_romance",
+      "url": "https://books.toscrape.com/catalogue/garden-romance_2/index.html",
+      "title": "Garden Romance",
+      "file": "pages/book_b.txt",
+      "word_count": 110,
+      "page_type": "product-detail",
+      "item_count": 1
+    }
+  ]
+}

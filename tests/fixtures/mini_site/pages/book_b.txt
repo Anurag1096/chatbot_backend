@@ -1,0 +1,14 @@
+URL: https://books.toscrape.com/catalogue/garden-romance_2/index.html
+Title: Garden Romance
+Page-Type: product-detail
+Scraped-At: 2026-08-10T12:00:00+00:00
+Book: Garden Romance
+Product-URL: https://books.toscrape.com/catalogue/garden-romance_2/index.html
+Price: £25.00
+Rating: 3 out of 5
+Category: Romance
+
+Description:
+Two strangers meet in a rooftop garden and discover that love can bloom in unexpected places.
+
+Product-URL: https://books.toscrape.com/catalogue/garden-romance_2/index.html

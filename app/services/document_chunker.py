@@ -7,6 +7,7 @@ from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from app.core.config import settings
+from app.services.ingestion_utils import dedupe_repeated_text, parse_price_value, parse_rating_value
 
 GENERIC_CATEGORIES = {"All products", "Books"}
 
@@ -43,6 +44,15 @@ class DocumentChunker:
             chunk_size=800,
             chunk_overlap=80,
         )
+        self._scraped_root = self.scraped_dir.resolve()
+
+    def _safe_page_path(self, relative_file: str) -> Path | None:
+        page_file = (self.scraped_dir / relative_file).resolve()
+        try:
+            page_file.relative_to(self._scraped_root)
+        except ValueError:
+            return None
+        return page_file
 
     def chunk_site(self) -> ChunkResult:
         manifest_path = self.scraped_dir / "manifest.json"
@@ -53,8 +63,8 @@ class DocumentChunker:
         raw_chunks: list[dict] = []
 
         for page in manifest.get("pages", []):
-            page_file = self.scraped_dir / page["file"]
-            if not page_file.exists():
+            page_file = self._safe_page_path(page.get("file", ""))
+            if page_file is None or not page_file.is_file():
                 continue
 
             text = page_file.read_text(encoding="utf-8")
@@ -199,23 +209,33 @@ class DocumentChunker:
     ) -> dict:
         product_url = fields.get("Product-URL", page_url if page_type == "product-detail" else "")
 
+        metadata: dict[str, str | int | float | bool] = {
+            "site_name": self.site_name,
+            "source_file": page["file"],
+            "page_id": page["id"],
+            "page_url": page_url,
+            "page_type": page_type,
+            "category": category or fields.get("Category", ""),
+            "book_title": fields.get("Book", ""),
+            "product_url": product_url,
+            "price": fields.get("Price", ""),
+            "rating": fields.get("Rating", ""),
+            "has_description": bool(fields.get("Description")),
+            "chunk_index": chunk_index,
+        }
+
+        price_value = parse_price_value(fields.get("Price", ""))
+        if price_value is not None:
+            metadata["price_value"] = price_value
+
+        rating_value = parse_rating_value(fields.get("Rating", ""))
+        if rating_value is not None:
+            metadata["rating_value"] = rating_value
+
         return {
             "id": chunk_id,
             "text": text,
-            "metadata": {
-                "site_name": self.site_name,
-                "source_file": page["file"],
-                "page_id": page["id"],
-                "page_url": page_url,
-                "page_type": page_type,
-                "category": category or fields.get("Category", ""),
-                "book_title": fields.get("Book", ""),
-                "product_url": product_url,
-                "price": fields.get("Price", ""),
-                "rating": fields.get("Rating", ""),
-                "has_description": bool(fields.get("Description")),
-                "chunk_index": chunk_index,
-            },
+            "metadata": metadata,
         }
 
     def _build_chunk_text(self, fields: dict[str, str], category: str) -> str:
@@ -240,7 +260,8 @@ class DocumentChunker:
         match = re.search(r"Description:\s*(.+?)(?:\n[A-Za-z-]+:|\Z)", text, re.DOTALL)
         if not match:
             return ""
-        return re.sub(r"\s+", " ", match.group(1)).strip()
+        description = re.sub(r"\s+", " ", match.group(1)).strip()
+        return dedupe_repeated_text(description)
 
     def _clean_chunk_text(self, text: str) -> str:
         cleaned = self.PRODUCT_HEADER_PATTERN.sub("", text)

@@ -10,6 +10,8 @@ import httpx
 from bs4 import BeautifulSoup, Tag
 
 from app.core.config import settings
+from app.services.ingestion_utils import dedupe_repeated_text
+from app.services.scrape_security import is_public_http_url
 
 STAR_RATINGS = {
     "One": 1,
@@ -67,6 +69,13 @@ class SiteDownloader:
         self._max_product_details = settings.scrape_max_product_details
         self._product_details_saved = 0
 
+        if not is_public_http_url(self.base_url):
+            raise ValueError(f"Blocked scrape URL (non-public or unsupported scheme): {self.base_url}")
+
+    async def _guard_request(self, request: httpx.Request) -> None:
+        if not is_public_http_url(str(request.url)):
+            raise httpx.RequestError(f"Blocked request URL: {request.url}")
+
     async def download(self) -> DownloadResult:
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.pages_dir.mkdir(parents=True, exist_ok=True)
@@ -79,6 +88,7 @@ class SiteDownloader:
             timeout=self.timeout,
             follow_redirects=True,
             headers={"User-Agent": "ChatbotRAG-SiteDownloader/1.0"},
+            event_hooks={"request": [self._guard_request]},
         ) as client:
             while queue and len(records) < self.max_pages:
                 url = queue.pop(0)
@@ -127,7 +137,8 @@ class SiteDownloader:
 
                 for product_url in parsed.get("product_urls", []):
                     if (
-                        product_url not in visited
+                        self._is_internal(product_url)
+                        and product_url not in visited
                         and product_url not in queue
                         and self._product_details_saved < self._max_product_details
                     ):
@@ -363,7 +374,9 @@ class SiteDownloader:
             return None
 
         text = description_tag.get_text(" ", strip=True)
-        return text or None
+        if not text:
+            return None
+        return dedupe_repeated_text(text)
 
     def _extract_product_attributes(self, soup: BeautifulSoup) -> dict[str, str]:
         attributes: dict[str, str] = {}

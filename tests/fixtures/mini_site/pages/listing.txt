@@ -1,0 +1,18 @@
+URL: https://books.toscrape.com/catalogue/category/books/poetry_23/index.html
+Title: Poetry | Books to Scrape
+Page-Type: category-listing
+Scraped-At: 2026-08-10T12:00:00+00:00
+Category: Poetry
+Product-Count: 2
+
+--- Product 1 ---
+Book: Moonlit Verses
+Price: £14.00
+Rating: 4 out of 5
+Product-URL: https://books.toscrape.com/catalogue/moonlit-verses_1/index.html
+
+--- Product 2 ---
+Book: Garden Romance
+Price: £25.00
+Rating: 3 out of 5
+Product-URL: https://books.toscrape.com/catalogue/garden-romance_2/index.html

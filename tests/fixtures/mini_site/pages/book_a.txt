@@ -1,0 +1,14 @@
+URL: https://books.toscrape.com/catalogue/moonlit-verses_1/index.html
+Title: Moonlit Verses
+Page-Type: product-detail
+Scraped-At: 2026-08-10T12:00:00+00:00
+Book: Moonlit Verses
+Product-URL: https://books.toscrape.com/catalogue/moonlit-verses_1/index.html
+Price: £14.00
+Rating: 4 out of 5
+Category: Poetry
+
+Description:
+A collection of quiet poems about night skies, city lights, and small moments of wonder.
+
+Product-URL: https://books.toscrape.com/catalogue/moonlit-verses_1/index.html
