@@ -33,4 +33,6 @@ docs/WORK_LOG.md
 docs/SECURITY_REVIEW.md
 
 # Local data (scraped content, vector stores, etc.)
-data/
+data/*
+!data/chroma/
+!data/chroma/**
