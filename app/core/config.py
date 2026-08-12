@@ -5,6 +5,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+def _read_secret(*names: str) -> str | None:
+    for name in names:
+        raw = os.getenv(name)
+        if not raw:
+            continue
+        cleaned = raw.strip().strip('"').strip("'")
+        if cleaned:
+            return cleaned
+    return None
+
+
 def _parse_cors_origins() -> list[str]:
     raw = os.getenv("CORS_ORIGINS", "").strip()
     if not raw:
@@ -48,17 +59,18 @@ class Settings:
     chroma_top_k: int = 4
     chroma_filter_top_k: int = 10
     chroma_cheapest_top_k: int = 5
+    chroma_llm_top_k: int = int(os.getenv("CHROMA_LLM_TOP_K", "8"))
 
     # Retrieval context
     retrieval_history_turns: int = 2
 
     # LLM generation (Google Gemini)
-    gemini_api_key: str | None = os.getenv("GEMINI_API_KEY")
-    gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
-    gemini_max_tokens: int = int(os.getenv("GEMINI_MAX_TOKENS", "1024"))
+    gemini_api_key: str | None = _read_secret("GEMINI_API_KEY", "GOOGLE_API_KEY")
+    gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+    gemini_max_tokens: int = int(os.getenv("GEMINI_MAX_TOKENS", "2048"))
     gemini_temperature: float = float(os.getenv("GEMINI_TEMPERATURE", "0.3"))
     llm_max_history_turns: int = int(os.getenv("LLM_MAX_HISTORY_TURNS", "6"))
-    llm_max_chunk_chars: int = int(os.getenv("LLM_MAX_CHUNK_CHARS", "600"))
+    llm_max_chunk_chars: int = int(os.getenv("LLM_MAX_CHUNK_CHARS", "1000"))
 
     # LLM rate limiting (per client IP)
     llm_rate_limit_enabled: bool = os.getenv("LLM_RATE_LIMIT_ENABLED", "true").lower() == "true"

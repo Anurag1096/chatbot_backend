@@ -110,6 +110,11 @@ class ChatService:
     def _should_use_llm(self, search_result: CatalogSearchResult) -> bool:
         return self.llm_service is not None and self.llm_service.is_available()
 
+    def _retrieval_top_k(self, default: int) -> int:
+        if self.llm_service is not None and self.llm_service.is_available():
+            return max(default, settings.chroma_llm_top_k)
+        return default
+
     async def _generate_llm_reply(
         self,
         message: str,
@@ -159,7 +164,7 @@ class ChatService:
                 price_min=parsed.price_min,
                 category=parsed.category,
                 rating_min=parsed.rating_min,
-                top_k=settings.chroma_top_k,
+                top_k=self._retrieval_top_k(settings.chroma_top_k),
                 fallback_semantic=False,
             )
             return CatalogSearchResult(
@@ -177,7 +182,7 @@ class ChatService:
                 price_min=parsed.price_min,
                 category=parsed.category,
                 rating_min=parsed.rating_min,
-                top_k=settings.chroma_cheapest_top_k,
+                top_k=self._retrieval_top_k(settings.chroma_cheapest_top_k),
                 sort_by_price="asc",
             )
             return CatalogSearchResult(
@@ -194,7 +199,7 @@ class ChatService:
                 price_min=parsed.price_min,
                 category=parsed.category,
                 rating_min=parsed.rating_min,
-                top_k=settings.chroma_filter_top_k,
+                top_k=self._retrieval_top_k(settings.chroma_filter_top_k),
                 fallback_semantic=not self._strict_price_filter(parsed),
             )
             return CatalogSearchResult(
@@ -204,7 +209,7 @@ class ChatService:
                 follow_up_note=follow_up_note,
             )
 
-        top_k = settings.chroma_top_k
+        top_k = self._retrieval_top_k(settings.chroma_top_k)
         if context.is_follow_up and context.focused_book_title:
             top_k = 1
 
