@@ -52,12 +52,11 @@ class Settings:
     # Retrieval context
     retrieval_history_turns: int = 2
 
-    # LLM generation (OpenAI)
-    openai_api_key: str | None = os.getenv("OPENAI_API_KEY")
-    openai_model: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-    openai_max_tokens: int = int(os.getenv("OPENAI_MAX_TOKENS", "1024"))
-    openai_temperature: float = float(os.getenv("OPENAI_TEMPERATURE", "0.3"))
-    openai_timeout_seconds: float = float(os.getenv("OPENAI_TIMEOUT_SECONDS", "30"))
+    # LLM generation (Google Gemini)
+    gemini_api_key: str | None = os.getenv("GEMINI_API_KEY")
+    gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+    gemini_max_tokens: int = int(os.getenv("GEMINI_MAX_TOKENS", "1024"))
+    gemini_temperature: float = float(os.getenv("GEMINI_TEMPERATURE", "0.3"))
     llm_max_history_turns: int = int(os.getenv("LLM_MAX_HISTORY_TURNS", "6"))
     llm_max_chunk_chars: int = int(os.getenv("LLM_MAX_CHUNK_CHARS", "600"))
 
@@ -80,7 +79,7 @@ class Settings:
 
     @property
     def llm_enabled(self) -> bool:
-        return bool(self.openai_api_key)
+        return bool(self.gemini_api_key)
 
 
 settings = Settings()
